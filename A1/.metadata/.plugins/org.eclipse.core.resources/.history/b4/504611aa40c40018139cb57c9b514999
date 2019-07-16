@@ -1,0 +1,6 @@
+#include <stdlib.h>
+
+void random_array(char *array, long bytes){
+
+	array[i] = 'A' + (rand() % 26);
+}

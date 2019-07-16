@@ -1,0 +1,361 @@
+<!doctype html>
+
+<html>
+<head>
+    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+        <link rel='icon' href="../../static/images/db.png">
+    <link rel='stylesheet' href="../../static/3rdparty/bootstrap-2.2.2/css/bootstrap.css">
+    <link rel='stylesheet' href="../../static/3rdparty/bootstrap-2.2.2/css/bootstrap-responsive.css">
+    <link rel='stylesheet' href='../../static/3rdparty/jQuery.jPlayer.2.2.0/skin/blue.monday/jplayer.blue.monday.css'>
+    <link rel='stylesheet' href='../../static/3rdparty/ligature_symbols/style.css'>
+    <link rel='stylesheet' href='../../static/3rdparty/prettify/prettify.css'>
+    <link href='../../static/fonts/PT-serif.css' rel='stylesheet' type='text/css'>
+    <link href='../../static/fonts/Inconsolata.css' rel='stylesheet' type='text/css'>
+    <link href='../../static/fonts/Old-Standard-TT.css' rel='stylesheet' type='text/css'>
+
+    <link href='../../static/piqunity.css' rel='stylesheet' type='text/css'>
+    <link href='../../static/piqunity-reading.css' rel='stylesheet' type='text/css'>
+    <link href='../../static/piqunity-lecture.css' rel='stylesheet' type='text/css'>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        messageStyle: 'simple',
+        showMathMenu: false,
+        skipStartupTypeset: false, /* TODO: */
+        extensions: ["tex2jax.js"],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+          skipTags: ["script","noscript","style","textarea"],
+          processEscapes: true
+        },
+        TeX: { equationNumbers: { autoNumber: "AMS" }},
+        "HTML-CSS": { availableFonts: ["TeX"] }
+      });
+    </script>
+    <script type="text/javascript" src="../../static/3rdparty/mathjax-2.0/MathJax.js"></script>
+
+    <style>
+    /* default */
+    /* desktop */
+    @media (min-width: 1200px) {
+    }
+    /* tablet */
+    @media (min-width: 768px) and (max-width: 1199px) {
+    }
+    /* phone */
+    @media (max-width: 767px) {
+}
+</style>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+    <title>Memory hierarchy</title>
+    <link rel='stylesheet' href='../style.css'>
+</head>
+
+<body
+    style='padding-top: 40px;' ## for navbar>
+ <!--       
+    <div class='navbar-fixed-top navbar piqunity'>
+        <div class='navbar-inner'>
+            <div class='container'>
+                <a class='brand lsf-icon' title='book' 
+                   href='/courses/443/2013' id='home-link'>
+                    Home
+                </a>
+                <ul class='nav' id='main-navbar'>
+                    <li class='dropdown'>
+                        <a href='#' data-toggle='dropdown' class='dropdown-toggle'>
+                            TOC <b class='caret'></b>
+                        </a>
+                        <ul class='dropdown-menu'>
+                            <li><a href="#" click="scrollto [sysuid=uid_2]">1. Disk access characteristics</a><ul></ul><li><a href="#" click="scrollto [sysuid=uid_3]">2. Sequential write to file</a><ul><li><a href="#" click="scrollto [sysuid=uid_7]">2.1. Random file generation</a><ul></ul><li><a href="#" click="scrollto [sysuid=uid_8]">2.2. Experiments</a><ul></ul></ul><li><a href="#" click="scrollto [sysuid=uid_4]">3. Sequential read from file</a><ul><li><a href="#" click="scrollto [sysuid=uid_9]">3.1. Computing histogram using block read</a><ul></ul><li><a href="#" click="scrollto [sysuid=uid_10]">3.2. Experiment</a><ul></ul></ul><li><a href="#" click="scrollto [sysuid=uid_5]">4. Organize your code</a><ul></ul><li><a href="#" click="scrollto [sysuid=uid_6]">5. Hints and facts about C</a><ul></ul>
+                        </ul>
+                    </li>
+
+                    <li class='dropdown revision'>
+                        <a href='#' data-toggle='dropdown' class='dropdown-toggle'>
+                            Revisions <b class='caret'></b>
+                        </a>
+                        <ul class='dropdown-menu'>
+                            <li> Jan 22, 2013: correction on sample code for get_histogram </li>
+                            <li> Jan 22, 2013: correction on get_histogram declaration </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a id='navbar-scrollspy'></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+-->
+    <div class='content'>
+        <article sysuid="uid_0" data-meta='{"title": "Memory hierarchy", "no-heading": true, "revisions": ["Jan 22, 2013: correction on sample code for get_histogram", "Jan 22, 2013: correction on get_histogram declaration"], "author": "_"}'>
+
+<section md="yes" sysuid="uid_2" section_number="1."><h1>1. Disk access characteristics</h1><div><p>In this assignment, we investigate the data access characteristics of
+secondary storage devices.  In the end, you will see the need of block based
+data transfer between main memory and the hard drive.</p>
+<p>Refer to the hints for some useful information on C.</p></div></section>
+
+<section md="yes" sysuid="uid_3" section_number="2."><h1>2. Sequential write to file</h1><div></div><section md="yes" sysuid="uid_7" section_number="2.1."><h1>2.1. Random file generation</h1><div><p>Implement a function:</p></div><pre class="dark program prettyprint linenums:1" sysuid="uid_22">
+/**
+ * populate a random array (which is already
+ * allocated with enough memory to hold n bytes.
+ */
+void random_array(char *array, long bytes);
+</pre><div><p><code>random_array()</code> populates the array with random characters from
+<em>A</em> to <em>Z</em> inclusively.</p>
+<p>Now, use this function to implement the command <code>create_random_file</code> with
+the following syntax.  Your program should allocate a fixed amount of memory
+<code>char buffer[block_size]</code>, and repeatedly generate random content
+into <code>buffer</code>, and then write <code>buffer</code> to disk.  A reasonable <code>block_size</code>
+is 1MB.</p></div><pre class="dark program prettyprint" lineno="" sysuid="uid_23">
+$ create_random_file &lt;filename&gt; &lt;total bytes&gt; &lt;block size&gt;
+</pre><div><p>Your program will need to report the time it took to write the random
+bytes to the file using the specified block size.</p></div></section><div></div><section md="yes" sysuid="uid_8" section_number="2.2."><h1>2.2. Experiments</h1><div><ul>
+<li>
+<p>Write a script to experiment with different block sizes, and record the respective write
+data rate in bytes/second. You can use any  scripting language (e.g. python, bash). Your scripts MUST run on CDF. Your script has to measure the rate for 10 different block sizes in the range of 100B to 3MB</p>
+</li>
+<p>You have to prepare a very short report for the following three sections:</p>
+<li>
+<p>Plot the observation of write data rate versus block size.  Provide a
+simple explanation of the observation.</p>
+</li>
+<li>
+<p>Discuss the existence of the optimal block size for write.</p>
+</li>
+<li>
+<p>Try it on different machines and different storage medium (hard drive,
+solid state drive, USB storage).  Compare the plots.pick at least 2 different medium</p>
+</li>
+</ul></div></section><div></div></section>
+
+<section md="yes" sysuid="uid_4" section_number="3."><h1>3. Sequential read from file</h1><div><p>In this section, you are to experiment with the performance of sequential
+scan with different read block sizes.</p></div><section sysuid="uid_9" section_number="3.1."><h1>3.1. Computing histogram using block read</h1>
+
+        You are to implement a function which scans through the file in blocks, and
+        compute the distribution of different letters, i.e., count the occurrances
+        of each letter: `A` to `Z`.  Your function returns 
+        the status code.
+
+        <pre class="dark program prettyprint linenums:1" sysuid="uid_24">
+/**
+ * file_ptr : the file pointer, ready to be read from.
+ * hist: an array to hold 26 long integers.  hist[0] is the
+ *       number of 'A', and hist[1] is the number of 'B', etc.
+ * block_size: the buffer size to be used.
+ * milliseconds: time it took to complete the file scan
+ * total_bytes_read: the amount data in bytes read
+ *
+ * returns: -1 if there is an error.
+ */
+int get_histogram(
+    FILE *file_ptr, 
+    long hist[], 
+    int block_size, 
+    long *milliseconds, 
+    long *total_bytes_read);
+</pre>
+
+        Here is a sample of how your function can be used:
+        <pre sysuid="uid_25" class="program prettyprint linenums:1">
+long hist[26];
+long milliseconds;
+long filelen;
+FILE *file_ptr = fopen("mybigfile.txt", "r");
+
+/**
+ * Compute the histogram using 2K buffers
+ */
+int ret = get_histogram( file_ptr, 
+                         hist, 
+                         2 * 1024,
+                         &amp;milliseconds,
+                         &amp;filelen);
+assert(! ret &lt; 0)
+
+printf("Computed the histogram in %d ms.\n", milliseconds);
+for(int i=0; i &lt; 26; i++) {
+    printf("%c : %d\n", 'A' + i, hist[i]);
+}
+printf("Data rate: %f Bps\n", (double)filelen/milliseconds * 1000);
+</pre>
+
+
+        Create an executable with the arguments:
+
+        <pre class="dark program prettyprint" lineno="" sysuid="uid_26">
+$ get_histogram &lt;filename&gt; &lt;blocksize&gt;
+</pre>
+
+        Your program is to display the histogram, the block size used, the total
+        number of bytes read from the file, and the time took in milliseconds.
+
+        This is the sample printout of the program:
+
+        <pre dedent="yes" sysuid="uid_27">A 43948
+B 48299
+C 43424
+D 23852
+...
+Z 48603
+BLOCK SIZE 1048576 bytes
+TOTAL BYTES 104857600 bytes
+TIME 72 milliseconds</pre>
+    </section><div></div><section md="yes" sysuid="uid_10" section_number="3.2."><h1>3.2. Experiment</h1><div><ul>
+<li>
+<p>Write a script to experiment with different block sizes, and record the read data rate
+in bytes per second. You can use any  scripting language (e.g. python, bash). Your scripts MUST run on CDF machines. Your script has to measure the rate for 10 different block sizes in the range of 100B to 3MB</p>
+</li>
+<p>You have to prepare a short report for following three sections:</p>
+
+<li>
+<p>Plot the observed read data rate versus block size.  Explain the
+curve.</p>
+</li>
+<li>
+<p>Discuss the existence of an optimal block size for read.  Compare this
+with the case for <em>write</em>.</p>
+</li>
+<li>
+<p>Run it on different machines and different medium.  Compare the
+plots. pick at least 2 medium </p>
+</li>
+</ul></div></section><div></div></section>
+
+<section sysuid="uid_5" section_number="4."><h1>4. Organize your code</h1>
+    
+    <ul class="nav nav-tabs"><li class="active"><a href="#uid_11" data-toggle="tab">Makefile</a></li></ul><div class="tab-content"><div sysuid="uid_11" active="yes" class="tab-pane fade in active" id="uid_11">
+        <pre sysuid="uid_28" class="program prettyprint linenums:1">
+CC = g++
+library.o: library.cc library.h
+    $(CC) -o library.o -c library.cc
+
+create_random_file: create_random_file.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+
+get_histogram: get_histogram.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+</pre>
+    </div></div>
+</section>
+
+<section md="yes" sysuid="uid_6" section_number="5."><h1>5. Hints and facts about C</h1><div><ul>
+<li><u sysuid="uid_12">Generating random characters</u>:<br sysuid="uid_13"></li>
+</ul></div><pre sysuid="uid_14" class="program prettyprint linenums:1">
+#include &lt;stdlib.h&gt;
+
+...
+char c = 'A' + (rand() % 26);
+...
+</pre><div><ul>
+<li><u sysuid="uid_15">Measuring system time in the units of milliseconds</u></li>
+</ul></div><pre sysuid="uid_16" class="program prettyprint linenums:1">
+#include &lt;sys/timeb.h&gt;
+...
+struct timeb t;
+ftime(&amp;t);
+long now_in_ms = t.time * 1000 + t.millitm;
+...
+</pre><div><ul>
+<li><u sysuid="uid_17">Perform block based write to disk</u></li>
+</ul></div><pre sysuid="uid_18" class="program prettyprint linenums:1">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+...
+
+long block_size = ...;
+char *buf = ...
+
+FILE *fp = fopen(filename, "w");
+fwrite(buf, 1, block_size, fp);
+fflush(fp);
+
+...
+
+fclose(fp);
+</pre><div></div><center><div md="yes" sysuid="uid_19" style="max-width: 600px;width: 100%"><div><p><strong>Note</strong>:</p>
+<ul>
+<li>Line 11: <code>fwrite(buf, itemsize, itemcount, fileptr)</code> writes
+in total <code>itemsize * itemcount</code> bytes to <code>fileptr</code> from <code>buf</code>.</li>
+<li>Line 12: <code>fflush(fileptr)</code> forces a disk write.  Modern operating system
+may have its own buffer manager, so your write may be deferred in
+the cache. 
+<!--
+<p> Experiment using <code>fflush</code> and <code>fsync</code> to understand when data is being cached and when it is being forced to disk.  -->
+</li>
+</ul></div></div></center><div><ul>
+<li><u sysuid="uid_20">Perform block based read from disk </u></li>
+</ul></div><pre sysuid="uid_21" class="program prettyprint linenums:1">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+long block_size = ...;
+char *buf = ...
+FILE *fp = fopen(filename, "r");
+
+...
+
+bzero(buf);
+fread(buf, 1, block_size, fp)
+
+...
+
+fclose(fp);
+</pre><div></div></section>
+
+<section md="yes" sysuid="uid_6" section_number="5."><h1>6. Deliverables</h1>
+
+<li>
+A tar ball in .tar.gz named a1.tar.gz that includes all project files i.e. c/c++ files, makefile, scripts, plots, report. Make sure that you can tar/untar your file on CDF successfully. if we can not untar the file, your assignment will not be marked. 
+</li>
+<li>
+A  maximum 4 page report in pdf format. 
+</li>
+
+
+</article>
+    </div>
+
+        <script src="../../static/3rdparty/jquery-1.8.2.min.js"></script>
+    <script src="../../static/3rdparty/jQuery.jPlayer.2.2.0/jquery.jplayer.min.js"></script>
+    <script src="../../static/3rdparty/popcorn-1.2/popcorn.js"></script>
+    <script src="../../static/3rdparty/popcorn-1.2/popcorn.player.js"></script>
+    <script src="../../static/3rdparty/jQuery.jPlayer.2.2.0/popcorn/popcorn.jplayer.js"></script>
+    <script src="../../static/3rdparty/prettify/prettify.js"></script>    
+    <script src="../../static/3rdparty/bootstrap-2.2.2/js/bootstrap.js"></script>
+    <script src="../../static/3rdparty/sprintf-0.7-beta1.js"></script>
+
+    
+    <script> var piqunity = {staticurl: '../static'}; </script>
+    <script src="../../static/utils.js"></script>
+    <script src="../../static/j.actions.js"></script>
+    <script src="../../static/j.baseevents.js"></script>
+    <script src="../../static/j.carousel.js"></script>
+    <script src="../../static/j.media.js"></script>
+    <script src="../../static/j.nav.js"></script>
+    <script src="../../static/j.navbar.js"></script>
+    <script src="../../static/j.program.js"></script>
+    <script src="../../static/j.quiz.js"></script>
+    <script src="../../static/j.reading.js"></script>
+    <script src="../../static/j.ref.js"></script>
+    <script src="../../static/j.scrollspy.js"></script>
+    <script src="../../static/j.margin.js"></script>
+
+    <script src="../../static/piqunity.js"></script>
+    <script>$(function() {
+});
+</script>
+
+    
+
+
+</body>
+</html>

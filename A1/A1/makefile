@@ -1,0 +1,16 @@
+CC = gcc
+CFLAGS = -Wall -g -std=c99
+	
+all: create_random_file get_histogram
+
+library.o: library.c library.h
+	$(CC) $(CFLAGS) -o library.o -c library.c
+ 
+create_random_file: create_random_file.c library.o
+	$(CC) $(CFLAGS) -o $@ $< library.o
+ 
+get_histogram: get_histogram.c library.o
+	$(CC) $(CFLAGS) -o $@ $< library.o
+	
+clean:
+	rm -f *.o create_random_file get_histogram

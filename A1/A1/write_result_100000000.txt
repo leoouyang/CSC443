@@ -1,0 +1,30 @@
+Current Configuration: Filename = test, Total Bytes = 100000000, Block Size = 100
+It takes 14835 milliseconds(14.835000 seconds) to write the file
+=======The write data rate is 6740815.638692 bytes/second=======
+Current Configuration: Filename = test, Total Bytes = 100000000, Block Size = 256
+It takes 5733 milliseconds(5.733000 seconds) to write the file
+=======The write data rate is 17442874.585732 bytes/second=======
+Current Configuration: Filename = test, Total Bytes = 100000000, Block Size = 1024
+It takes 2820 milliseconds(2.820000 seconds) to write the file
+=======The write data rate is 35460992.907801 bytes/second=======
+Current Configuration: Filename = test, Total Bytes = 100000000, Block Size = 4096
+It takes 789 milliseconds(0.789000 seconds) to write the file
+=======The write data rate is 126742712.294043 bytes/second=======
+Current Configuration: Filename = test, Total Bytes = 100000000, Block Size = 16384
+It takes 242 milliseconds(0.242000 seconds) to write the file
+=======The write data rate is 413223140.495868 bytes/second=======
+Current Configuration: Filename = test, Total Bytes = 100000000, Block Size = 32768
+It takes 138 milliseconds(0.138000 seconds) to write the file
+=======The write data rate is 724637681.159420 bytes/second=======
+Current Configuration: Filename = test, Total Bytes = 100000000, Block Size = 100000
+It takes 102 milliseconds(0.102000 seconds) to write the file
+=======The write data rate is 980392156.862745 bytes/second=======
+Current Configuration: Filename = test, Total Bytes = 100000000, Block Size = 300000
+It takes 74 milliseconds(0.074000 seconds) to write the file
+=======The write data rate is 1351351351.351351 bytes/second=======
+Current Configuration: Filename = test, Total Bytes = 100000000, Block Size = 1000000
+It takes 67 milliseconds(0.067000 seconds) to write the file
+=======The write data rate is 1492537313.432836 bytes/second=======
+Current Configuration: Filename = test, Total Bytes = 100000000, Block Size = 3000000
+It takes 61 milliseconds(0.061000 seconds) to write the file
+=======The write data rate is 1639344262.295082 bytes/second=======

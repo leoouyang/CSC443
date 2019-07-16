@@ -1,0 +1,44 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/timeb.h>
+
+#include "library.h"
+
+
+int main(int argc, char* argv[]){
+	if (argc != 4){
+		printf("Wrong number of arguments. To run the program: ./create_random_file <filename> <total bytes> <block size>\n");
+		exit(-1);
+	}
+
+	char *filename = argv[1];
+	long total_bytes = strtol(argv[2], NULL, 10);
+	long block_size = strtol(argv[3], NULL, 10);
+
+	char *buf = (char *) malloc(block_size);
+	FILE *fp = fopen(filename, "w");
+	if (!fp) {
+			perror("failed to open file");
+			exit(1);
+	}
+
+	struct timeb start_time;
+	struct timeb end_time;
+	long accumulator = 0;
+	for (int i = 0; i < total_bytes; i += block_size){
+		random_array(buf, block_size);
+
+		ftime(&start_time);
+
+		fwrite(buf, 1, block_size, fp);
+		fflush(fp);
+
+		ftime(&end_time);
+
+		long start_time = t.time * 1000 + t.millitm;
+
+		accumulator += end_time.time * 1000 + end_time.millitm - start_time;
+	}
+	exit(0);
+}
+

@@ -1,0 +1,10 @@
+#include <library.h>
+
+
+int main(int argc, char* argv[]){
+	if (argc != 4){
+		printf("Wrong number of arguments")
+	}
+	exit(0);
+}
+

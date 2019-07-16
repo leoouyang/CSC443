@@ -1,0 +1,533 @@
+<!doctype html>
+
+<html>
+<head>
+    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+        <link rel='icon' href="../static/images/db.png">
+    <link rel='stylesheet' href="../static/3rdparty/bootstrap-2.2.2/css/bootstrap.css">
+    <link rel='stylesheet' href="../static/3rdparty/bootstrap-2.2.2/css/bootstrap-responsive.css">
+    <link rel='stylesheet' href='../static/3rdparty/jQuery.jPlayer.2.2.0/skin/blue.monday/jplayer.blue.monday.css'>
+    <link rel='stylesheet' href='../static/3rdparty/ligature_symbols/style.css'>
+    <link rel='stylesheet' href='../static/3rdparty/prettify/prettify.css'>
+    <link href='../static/fonts/PT-serif.css' rel='stylesheet' type='text/css'>
+    <link href='../static/fonts/Inconsolata.css' rel='stylesheet' type='text/css'>
+    <link href='../static/fonts/Old-Standard-TT.css' rel='stylesheet' type='text/css'>
+
+    <link href='../static/piqunity.css' rel='stylesheet' type='text/css'>
+    <link href='../static/piqunity-reading.css' rel='stylesheet' type='text/css'>
+    <link href='../static/piqunity-lecture.css' rel='stylesheet' type='text/css'>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        messageStyle: 'simple',
+        showMathMenu: false,
+        skipStartupTypeset: false, /* TODO: */
+        extensions: ["tex2jax.js"],
+        jax: ["input/TeX", "output/HTML-CSS"],
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+          skipTags: ["script","noscript","style","textarea"],
+          processEscapes: true
+        },
+        TeX: { equationNumbers: { autoNumber: "AMS" }},
+        "HTML-CSS": { availableFonts: ["TeX"] }
+      });
+    </script>
+    <script type="text/javascript" src="../static/3rdparty/mathjax-2.0/MathJax.js"></script>
+
+    <style>
+    /* default */
+    /* desktop */
+    @media (min-width: 1200px) {
+    }
+    /* tablet */
+    @media (min-width: 768px) and (max-width: 1199px) {
+    }
+    /* phone */
+    @media (max-width: 767px) {
+}
+</style>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+    <title>Data Layout</title>
+    <link rel='stylesheet' href='../style.css'>
+</head>
+
+<body
+    style='padding-top: 40px;' ## for navbar
+    >
+<!--        
+    <div class='navbar-fixed-top navbar piqunity'>
+        <div class='navbar-inner'>
+            <div class='container'>
+                <a class='brand lsf-icon' title='book' 
+                   href='/courses/443/2014' id='home-link'>
+                    Home
+                </a>
+                <ul class='nav' id='main-navbar'>
+                    <li class='dropdown'>
+                        <a href='#' data-toggle='dropdown' class='dropdown-toggle'>
+                            TOC <b class='caret'></b>
+                        </a>
+                        <ul class='dropdown-menu'>
+                            <li><a href="#" click="scrollto [sysuid=uid_2]">1. Relational data layout on disk</a><ul></ul><li><a href="#" click="scrollto [sysuid=uid_3]">2. Record serialization</a><ul><li><a href="#" click="scrollto [sysuid=uid_8]">2.1. Fixed length record serialization</a><ul></ul><li><a href="#" click="scrollto [sysuid=uid_9]">2.2. Variable length record serialization</a><ul></ul><li><a href="#" click="scrollto [sysuid=uid_10]">2.3. Experiments</a><ul></ul></ul><li><a href="#" click="scrollto [sysuid=uid_4]">3. Page layout</a><ul><li><a href="#" click="scrollto [sysuid=uid_11]">3.1. Storing fixed length records in pages</a><ul></ul><li><a href="#" click="scrollto [sysuid=uid_12]">3.2. Experiment</a><ul></ul></ul><li><a href="#" click="scrollto [sysuid=uid_5]">4. Heap file</a><ul><li><a href="#" click="scrollto [sysuid=uid_16]">4.1. Heap file functions</a><ul></ul><li><a href="#" click="scrollto [sysuid=uid_17]">4.2. Experiment</a><ul></ul></ul><li><a href="#" click="scrollto [sysuid=uid_6]">5. Organize your submission</a><ul></ul>
+                        </ul>
+                    </li>
+
+                    <li class='dropdown revision'>
+                        <a href='#' data-toggle='dropdown' class='dropdown-toggle'>
+                            Revisions <b class='caret'></b>
+                        </a>
+                        <ul class='dropdown-menu'>
+                            <li> 2013/01/23: added the mkcsv.py utility </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a id='navbar-scrollspy'></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+-->
+    <div class='content'>
+        <article sysuid="uid_0" data-meta='{"title": "Data Layout", "no-heading": true, "revisions": ["2013/01/23: added the mkcsv.py utility"], "author": "_"}'>
+
+<section md="yes" sysuid="uid_2" section_number="1."><h1>1. Relational data layout on disk</h1><div><p>In this assignment, we are to implement a library containing functions to
+store and maintain relational data on disk using the <em>heap file</em> data
+structure.  We are asking you to implement and experiment two different file formats corresponding to a <em>row store</em> and a <em>column store</em>.
+</p></div></section>
+
+<section md="yes" sysuid="uid_3" section_number="2."><h1>2. Record serialization</h1><div><p>For simplicity, we assume that records are maps mapping attribute names
+to values.  The attribute names are stored as part of the schema, which will
+not be stored as part of the record serialization.</p>
+<p>Therefore, we can abstract records as a tuple of values.</p></div><pre sysuid="uid_7" class="program prettyprint linenums:1">
+#include &lt;vector&gt;
+typedef const char* V;
+typedef std::vector&lt;V&gt; Record;
+</pre><div></div>
+<!-- <section md="yes" sysuid="uid_8" section_number="2.1."><h1>2.1. Fixed length record serialization</h1> -->
+<div><p>You need to implement serialization of fixed length records.</p></div><pre class="dark program prettyprint" lineno="" sysuid="uid_19">
+/**
+ * Compute the number of bytes required to serialize record
+ */
+int fixed_len_sizeof(Record *record);
+
+/**
+ * Serialize the record to a byte array to be stored in buf.
+ */
+void fixed_len_write(Record *record, void *buf);
+</pre><div><p>You will also need to implement the deserialization functions.</p></div><pre class="dark program prettyprint linenums:1" sysuid="uid_20">
+/**
+ * Deserializes `size` bytes from the buffer, `buf`, and
+ * stores the record in `record`.
+ */
+void fixed_len_read(void *buf, int size, Record *record);
+</pre><div></div></section><div></div><section md="yes" sysuid="uid_9" section_number="2.2.">
+
+<!--
+<h1>2.2. Variable length record serialization</h1><div><p>You need to implement functions to serialize variable length records.</p></div><pre class="dark program prettyprint linenums:1" sysuid="uid_21">
+/**
+ * Compute the number of bytes required to serialize record
+ */
+int var_len_sizeof(Record *record);
+
+/**
+ * Serialize the record using variable record encoding
+ */
+void var_len_write(Record *record, void *buf);
+
+/**
+ * Deserialize the `buf` which contains the variable record encoding.
+ */
+void var_len_read(void *buf, int size, Record *record);
+</pre><div></div></section><div></div>
+-->
+
+<section md="yes" sysuid="uid_10" section_number="2.3."><h1>2.3. Experiments</h1><div><p>We assume that there is only <em>one</em> table schema.
+There are 100 attributes, and each attribute is 10 bytes each.  So,
+records in the table are fixed length.</p>
+<ul>
+<li>
+<p>Calculate the size of fixed length serialization of records in the
+table.</p>
+</li>
+<li>
+<p>Use <code>fixed_len_sizeof()</code> to check if it agrees with your calculation.</p>
+</li>
+<!--
+<li>
+<p>Calculate the size of variable length serialization of the records.</p>
+</li>
+<li>
+<p>Use <code>var_len_sizeof()</code> to check if it agrees with your calculation.</p>
+</li>
+-->
+</ul></div></section><div></div></section>
+
+<section md="yes" sysuid="uid_4" section_number="3."><h1>3. Page layout</h1><div><p>Recall that it's critial for all disk I/O to be done in units of blocks,
+known as <em>pages</em>.  In this section, we experiment with storing serialized
+records in pages.</p></div><section md="yes" sysuid="uid_11" section_number="3.1."><h1>3.1. Storing fixed length records in pages</h1><div><p>Use slotted directory based page layout to store fixed length records.</p></div><pre sysuid="uid_22" class="program prettyprint linenums:1">
+typedef struct {
+    void *data;
+    int page_size;
+    int slot_size;
+} Page;
+</pre><div></div><pre class="dark program prettyprint linenums:1" sysuid="uid_23">
+/**
+ * Initializes a page using the given slot size
+ */
+void init_fixed_len_page(Page *page, int page_size, int slot_size);
+
+/**
+ * Calculates the maximal number of records that fit in a page
+ */
+int fixed_len_page_capacity(Page *page);
+
+/**
+ * Calculate the free space (number of free slots) in the page
+ */
+int fixed_len_page_freeslots(Page *page);
+
+/**
+ * Add a record to the page
+ * Returns:
+ *   record slot offset if successful,
+ *   -1 if unsuccessful (page full)
+ */
+int add_fixed_len_page(Page *page, Record *r);
+
+/**
+ * Write a record into a given slot.
+ */
+void write_fixed_len_page(Page *page, int slot, Record *r);
+
+/**
+ * Read a record from the page from a given slot.
+ */
+void read_fixed_len_page(Page *page, int slot, Record *r);
+</pre><div><p>Use these functions to implement the following executables.</p>
+<p><a name="write_fixed_len_pages" sysuid="uid_24"></a></p>
+<p>Load as many records from a comma separated file to fill up a page, and
+append the page to a file. Repeat until all the records in the CSV files
+are written to the page file.  Your program should follow the following
+syntax, and produce the output containing record count, page count, and
+time took, similar to as follows:</p></div><pre class="dark program prettyprint" lineno="" sysuid="uid_25">
+$ write_fixed_len_pages &lt;csv_file&gt; &lt;page_file&gt; &lt;page_size&gt;
+
+NUMBER OF RECORDS: 1000
+NUMBER OF PAGES: 32
+TIME: 43 milliseconds
+</pre><div><p>Write another program to load the <code>page_file</code>, and print out all
+records in the page in CSV format.</p></div><pre class="dark program prettyprint" lineno="" sysuid="uid_26">
+$ read_fixed_len_page &lt;page_file&gt; &lt;page_size&gt;
+</pre><div></div></section><div></div><section md="yes" sysuid="uid_12" section_number="3.2."><h1>3.2. Experiment</h1><div></div><div md="yes" sysuid="uid_27" class="margin margin-right"><div class="margin-anchor"><a href="javascript:void(0)" title="File generator" click="toggle [sysuid=uid_27]"><span class="lsf">comment</span></a></div><div class="margin-content popover right"><div class="arrow"></div><h3 class="popover-title">File generator</h3><div class="popover-content"><div><div><p>You can use this simple <a href="./mkcsv.py">csv</a> generator to
+generate test inputs.</p></div></div></div></div></div><div><ul>
+<li>
+<p>Plot the performance (records / second) versus page size for write and
+read.</p>
+</li>
+
+<!--
+<p>Compare this to the blocked disk I/O characteristics you measured
+in the previous assignment.</p>
+
+<p>Compare this to the blocked disk I/O characteristics you observed in the <a href="http://dblab.cs.toronto.edu/courses/443/2014/memory-hierarchy/tutorial.html"> tutorial</a></p>
+-->
+
+<!--
+<li>
+<p>Based on your observation, approximate the performance difference if
+variable length record encoding is used. Justify your answer.</p>
+</li>
+-->
+<li>
+<p>Discuss why page based format is superior to storing records using a CSV
+file.</p>
+</li>
+<li>
+<p>Discuss the short comings of the way we organize pages.</p>
+</li>
+</ul></div></section><div></div></section>
+
+<section md="yes" sysuid="uid_5" section_number="4."><h1>4. Heap file</h1><div><p>Finally, we are able to build the code to generate and maintain <em>heap
+files</em>.</p>
+<p>Again, we assume a fixed table schema.  All records have 100
+attributes, and the values of each attribute are 10 bytes.  </p>
+<p>A heap file is just a paginated file.  Each page is to store a series of
+records.  </p></div><pre sysuid="uid_13" class="program prettyprint linenums:1">
+typedef struct {
+    FILE *file_ptr;
+    int page_size;
+} Heapfile
+</pre><div><p>We assume the following way to assign unique identifiers to records in the
+heap file:  </p></div><center><div md="yes" style="border: thin solid black; margin-bottom: 20px; padding: 20px;max-width: 600px;width: 100%" sysuid="uid_14"><div><ul>
+<li>
+<p>Every page <mathjax>$p$</mathjax> has an entry in the heap directory of 
+  <code>(page_offset, freespace)</code>.  The page ID of <mathjax>$p$</mathjax> can be the index of its
+  entry in the directory.  We call this: <mathjax>$\mathrm{ID}(p)$</mathjax>.</p>
+</li>
+<li>
+<p>Every record <mathjax>$r$</mathjax> is stored at some slot in some page <mathjax>$p$</mathjax>.  The record ID,
+<mathjax>$\mathrm{ID}(r)$</mathjax> is the contenation of <mathjax>$\mathrm{ID}(p)$</mathjax> and the slot index
+in <mathjax>$p$</mathjax>.</p>
+</li>
+</ul></div></div></center><div><p>You can use the following structures to abstract page ID and record ID.</p></div><pre sysuid="uid_15" class="program prettyprint linenums:1">
+typedef int PageID;
+
+typedef struct {
+    int page_id;
+    int slot;
+} RecordID;
+</pre><div></div><section sysuid="uid_16" section_number="4.1."><h1>4.1. Heap file functions</h1>
+
+        We are to implement a directory based heap file in which we have
+        directory pages (organized as a linked list), and data pages that store
+        records.
+        
+        <pre class="dark program prettyprint" lineno="" sysuid="uid_28">
+/**
+ * Initalize a heapfile to use the file and page size given.
+ */
+void init_heapfile(Heapfile *heapfile, int page_size, FILE *file);
+</pre>
+
+        <pre class="dark program prettyprint" lineno="" sysuid="uid_29">
+/**
+ * Allocate another page in the heapfile.  This grows the file by a page.
+ */
+PageID alloc_page(Heapfile *heapfile);
+</pre>
+
+        <pre class="dark program prettyprint" lineno="" sysuid="uid_30">
+/**
+ * Read a page into memory
+ */
+void read_page(Heapfile *heapfile, PageID pid, Page *page);
+</pre>
+
+        <pre class="dark program prettyprint" lineno="" sysuid="uid_31">
+/**
+ * Write a page from memory to disk
+ */
+void write_page(Page *page, Heapfile *heapfile, PageID pid);
+</pre>
+
+        The central functionality of a heap file is enumeration of records.
+        Implement the record iterator class.
+
+        <pre class="dark program prettyprint" lineno="" sysuid="uid_32">
+class RecordIterator {
+    public:
+    RecordIterator(Heapfile *heapfile);
+    Record next();
+    bool hasNext();
+}
+</pre>
+        
+    </section><div></div>
+
+<section md="yes" sysuid="uid_17" section_number="4.2.">
+	<h1>4.2. Heap file operations</h1>
+
+	<p>Write the following executables to allow basic operations on the heap file. Your program must rely on page based disk I/O.</p>
+
+	<pre class="dark program prettyprint" lineno="" sysuid="uid_33">
+# Build heap file from CSV file
+$ csv2heapfile &lt;csv_file&gt; &lt;heapfile&gt; &lt;page_size&gt;
+
+# Print out all records in a heap file
+$ scan &lt;heapfile&gt; &lt;page_size&gt;
+
+# Insert all records in the CSV file to a heap file
+$ insert &lt;heapfile&gt; &lt;csv_file&gt; &lt;page_size&gt;
+
+# Update one attribute of a single record in the heap file given its record ID
+# &lt;attribute_id&gt; is the index of the attribute to be updated (e.g. 0 for the first attribute, 1 for the second attribute, etc.)
+# &lt;new_value&gt; will have the same fixed length (10 bytes)
+$ update &lt;heapfile&gt; &lt;record_id&gt; &lt;attribute_id&gt; &lt;new_value&gt; &lt;page_size&gt;
+
+# Delete a single record in the heap file given its record ID
+$ delete &lt;heapfile&gt; &lt;record_id&gt; &lt;page_size&gt;</pre>
+</section>
+
+<section md="yes" sysuid="uid_18" section_number="4.3.">
+	<h1>4.3. Experiment</h1>
+	
+	<p>Measure the performance of <code>csv2heapfile</code>, comment on how the page size affects the performance of load.</p>
+
+	<p>Write an executable:</p>	
+
+	<pre class="dark program prettyprint" lineno="" sysuid="uid_35">
+# Select single attirbute with parameters &lt;start&gt; and &lt;end&gt;
+# &lt;attribute_id&gt; is the index of the attribute to be selected (e.g. 0 for the first attribute, 1 for the second attribute, etc.)
+$ select &lt;heapfile&gt; &lt;attribute_id&gt; &lt;start&gt; &lt;end&gt; &lt;page_size&gt;</pre>
+	
+	<p>that performs the following parametrized SQL query:</p>
+
+	<pre class="prettyprint" sysuid="uid_36">
+        SELECT SUBSTRING(A, 1, 5) FROM T
+        WHERE A &gt;= <i font="red" class="nocode" sysuid="uid_39" style="color: red">start</i> AND A &lt;= <i font="red" class="nocode" sysuid="uid_40" style="color: red">end</i></pre>
+        <ul>
+			<li>Measure the performance of the query versus page size.</li>
+			<li>Comment on the choice of page size and the effects of the range from <i font="red" sysuid="uid_37" style="color: red">start</i> and <i font="red" sysuid="uid_38" style="color: red">end</i> on the performance of the query.</li>
+		</ul>
+</section>
+</section>
+
+<section section_number="5.">
+    
+    <h1>5. Column Store</h1>
+    
+    <p>A column-oriented DBMS (or Column Store), stores all values of a single attribute (column) together, rather than storing all values of a single record together.  Hence, the main abstract they use is of  columns-of-data rather than rows-of-data.  Most DBMS are row-oriented, but depending on the workload, column-oriented DBMS may provide better performance.  Below is an illustration of column store (left) and row-store (right).</p>
+    <p><img src="./columnstore1.png"></p>
+
+    <p>Consider a query that returns all values of the attribute Name.  In a column store you only need to retrieve Name values from the file. 
+<!--For example if you need to scan Name field for each record, you just need to read in the Name column. -->
+In constract,  in when using row-oriented storage, to find the Name value of a record, you are necessarily retrieving all attribute values in the record.  Hence, to return all values of the Name attribute, 
+ you need to read the entire table. The drawback of column store is you that you need to do extra work to reconstruct the tuple.  Suppose you wish to return the Name and Salary values from a table.  To be able to reassemble records, a column-oriented DBMS will store the tuple id (record-id) with each value in a column. </p>
+
+Column-oriented storage has advantages for queries that only access some of the attributes of a table.  However, insertion and deletion now may require multiple page accesses as each tuple is no longer stored on a single page
+<!--You also need to do multiple seeks to do insert in a column-store. -->
+</p>
+
+    <p>For this assignment, we will implement a simplified version of column store using your existing heap file implementation. Our implementation will have a separate heap file for each column of a table.</p>
+    <p><img src="./columnstore2.png"></p>
+
+    <p>We will use the same fixed table schema (100 attributes, 10 bytes each). For each attribute, you need to create a separate heap file. You can name the heap file with the same name as the attribute id. You should put all attribute heap files in a single file directory.  
+This is a  simplification for this assignment to make the bookkeeping on what files are in a relation simpler.  Think about the limitations of the simplification.  
+</p>
+
+    <p>Tuple reconstruction:  Different attributes of a tuple will be in different heap file. So, we need to reconstruct the tuple (part of the tuple) to get the result of a query. We can store the tuple-id with each field. Two attributes will have the same tuple-id if they belong to the same tuple. 
+<!--Below is an illustration of how it is done.-->  </p>
+    <p><img src="./columnstore3.png"></p>
+
+    <section md="yes" section_number="5.1.">
+
+        <h1>5.1. Column-Oriented file operations</h1>
+
+        <p>Implement an executable to create a column store from a CSV file:</p>
+        <pre class="dark program prettyprint" lineno="">
+# Build a column store from CSV file
+# &lt;colstore_name&gt; should be a file directory to store the heap files
+$ csv2colstore &lt;csv_file&gt; &lt;colstore_name&gt; &lt;page_size&gt;</pre>
+
+        <p>Implement an executable:</p>
+        <pre class="dark program prettyprint" lineno="">
+# Select a single attribute from the column store where parameter
+# &lt;attribute_id&gt; is the index of the attribute to be project and returned (e.g. 0 for the first attribute, 1 for the second attribute, etc.)
+# the value of the attribute must be between &lt;start&gt; and &lt;end&gt; 
+$ select2  &lt;colstore_name&gt; &lt;attribute_id&gt; &lt;start&gt; &lt;end&gt; &lt;page_size&gt;</pre>
+        <p>that performs the following parametrized SQL query.  Note that the selection predicate is on the same attribute that is returned by the query.</p>
+        <pre class="prettyprint">
+    SELECT SUBSTRING(A, 1, 5) FROM T
+    WHERE A &gt;= <i font="red" class="nocode" style="color: red">start</i> AND A &lt;= <i font="red" class="nocode" style="color: red">end</i></pre>
+
+
+        <p>Implement an executable:</p>
+        <pre class="dark program prettyprint" lineno="">
+# Select only a single attribute from the column store where parameter
+# &lt;return_attribute_id&gt; (B) is the index of an attribute to be projected and returned 
+# &lt;attribute_id&gt; (A) is the index of (a possibly different) attribute whose value must be between  &lt;start&gt; and &lt;end&gt; 
+$ select3  &lt;colstore_name&gt; &lt;attribute_id&gt; &lt;return_attribute_id&gt; &lt;start&gt; &lt;end&gt; &lt;page_size&gt;</pre>
+        <p>that performs the following parametrized SQL query:</p>
+        <pre class="prettyprint">
+    SELECT SUBSTRING(B, 1, 5) FROM T
+    WHERE A &gt;= <i font="red" class="nocode" style="color: red">start</i> AND A &lt;= <i font="red" class="nocode" style="color: red">end</i></pre>
+    </section>
+
+    <section md="yes" section_number="5.2.">
+
+        <h1>5.2. Experiment</h1>
+<ul>
+     <li>   <p>Measure the performance of <code>csv2colstore</code> against different page sizes. 
+     <li> Compare the result with that of <code>csv2heapfile</code> in the previous section. Comment on the difference.</p>
+
+     <li>   <p>Compare the performance of <code>select2</code> with that of <code>select</code> in the previous section. Comment on the difference.</p>
+
+     <li>   <p>Compare the performance of <code>select3</code> with that of <code>select</code> and <code>select2</code>. Comment on the difference especially with respect to different selection ranges (different values of start and end).</p>
+</ul>
+    </section>
+
+</section>
+
+<section sysuid="uid_6" section_number="6."><h1>6. Organize your submission</h1>
+
+    <pre sysuid="uid_19" class="program prettyprint linenums:1">
+# Makefile
+CC = g++ 
+
+library.o: library.cc library.h
+    $(CC) -o \$@ -c $&lt;
+
+csv2heapfile: csv2heapfile.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+
+scan: scan.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+
+insert: insert.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+
+update: update.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+
+delete: delete.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+
+select: select.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+
+csv2colstore: csv2colstore.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+
+select2: select2.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+
+select3: select3.cc library.o
+    $(CC) -o \$@ $&lt; library.o
+</pre>
+</section>
+
+<section md="yes" sysuid="uid_5" section_number="7."><h1>7. Submission</h1><div><p>Submit your code as .tar file to Markus</p>
+</section>
+</article>
+    </div>
+
+        <script src="../static/3rdparty/jquery-1.8.2.min.js"></script>
+    <script src="../static/3rdparty/jQuery.jPlayer.2.2.0/jquery.jplayer.min.js"></script>
+    <script src="../static/3rdparty/popcorn-1.2/popcorn.js"></script>
+    <script src="../static/3rdparty/popcorn-1.2/popcorn.player.js"></script>
+    <script src="../static/3rdparty/jQuery.jPlayer.2.2.0/popcorn/popcorn.jplayer.js"></script>
+    <script src="../static/3rdparty/prettify/prettify.js"></script>    
+    <script src="../static/3rdparty/bootstrap-2.2.2/js/bootstrap.js"></script>
+    <script src="../static/3rdparty/sprintf-0.7-beta1.js"></script>
+
+    
+    <script> var piqunity = {staticurl: '../static'}; </script>
+    <script src="../static/utils.js"></script>
+    <script src="../static/j.actions.js"></script>
+    <script src="../static/j.baseevents.js"></script>
+    <script src="../static/j.carousel.js"></script>
+    <script src="../static/j.media.js"></script>
+    <script src="../static/j.nav.js"></script>
+    <script src="../static/j.navbar.js"></script>
+    <script src="../static/j.program.js"></script>
+    <script src="../static/j.quiz.js"></script>
+    <script src="../static/j.reading.js"></script>
+    <script src="../static/j.ref.js"></script>
+    <script src="../static/j.scrollspy.js"></script>
+    <script src="../static/j.margin.js"></script>
+
+    <script src="../static/piqunity.js"></script>
+    <script>$(function() {
+});
+</script>
+
+    
+
+
+</body>
+</html>

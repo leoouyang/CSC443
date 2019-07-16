@@ -1,0 +1,12 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "library.h"
+
+
+int main(int argc, char* argv[]){
+	if (argc != 4){
+		printf("Wrong number of arguments. To run the program: ./create_random_file <filename> <total bytes> <block size>\n");
+	}
+	exit(0);
+}
+
